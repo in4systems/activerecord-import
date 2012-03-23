@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{activerecord-import}
+  s.name = "activerecord-import"
   s.version = "0.2.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Zach Dennis"]
-  s.date = %q{2011-12-15}
-  s.description = %q{Extraction of the ActiveRecord::Base#import functionality from ar-extensions for Rails 3 and beyond}
-  s.email = %q{zach.dennis@gmail.com}
+  s.date = "2012-01-14"
+  s.description = "Extraction of the ActiveRecord::Base#import functionality from ar-extensions for Rails 3 and beyond"
+  s.email = "zach.dennis@gmail.com"
   s.extra_rdoc_files = [
     "README.markdown"
   ]
@@ -38,10 +38,10 @@ Gem::Specification.new do |s|
     "lib/activerecord-import/sqlite3.rb",
     "lib/activerecord-import/synchronize.rb"
   ]
-  s.homepage = %q{http://github.com/zdennis/activerecord-import}
+  s.homepage = "http://github.com/zdennis/activerecord-import"
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.9.2}
-  s.summary = %q{Bulk-loading extension for ActiveRecord}
+  s.rubygems_version = "1.8.10"
+  s.summary = "Bulk-loading extension for ActiveRecord"
   s.test_files = [
     "test/active_record/connection_adapter_test.rb",
     "test/adapters/jdbcmysql.rb",

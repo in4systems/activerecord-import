@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
     "lib/activerecord-import/mysql.rb",
     "lib/activerecord-import/mysql2.rb",
     "lib/activerecord-import/postgresql.rb",
+    "lib/activerecord-import/sqlanywhere.rb",
     "lib/activerecord-import/sqlite3.rb",
     "lib/activerecord-import/synchronize.rb"
   ]
@@ -76,6 +77,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<activerecord>, ["~> 3.0pre"])
+      s.add_runtime_dependency(%q<activerecord-sqlanywhere-adapter>)
       s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 1.4.0"])
       s.add_runtime_dependency(%q<activerecord>, ["~> 3.0pre"])

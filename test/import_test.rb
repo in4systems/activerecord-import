@@ -19,6 +19,16 @@ describe "#import" do
     end
   end
 
+  describe "with non-default ActiveRecord models" do  
+    context "that have a non-standard primary key (that is no sequence)" do
+      it "should import models successfully" do
+        assert_difference "Widget.count", +3 do
+          Widget.import Build(3, :widgets)
+        end
+      end
+    end
+  end
+
   context "with :validation option" do
     let(:columns) { %w(title author_name) }
     let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
@@ -34,6 +44,12 @@ describe "#import" do
       it "should import invalid data" do
         assert_difference "Topic.count", +2 do
           result = Topic.import columns, invalid_values, :validate => false
+        end
+      end
+
+      it 'should raise a specific error if a column does not exist' do
+        assert_raises ActiveRecord::Import::MissingColumnError do
+          Topic.import ['foo'], [['bar']], :validate => false
         end
       end
     end
@@ -65,7 +81,45 @@ describe "#import" do
       end
     end
   end
-  
+
+  context "with :all_or_none option" do
+    let(:columns) { %w(title author_name) }
+    let(:valid_values) { [[ "LDAP", "Jerry Carter"], ["Rails Recipes", "Chad Fowler"]] }
+    let(:invalid_values) { [[ "The RSpec Book", ""], ["Agile+UX", ""]] }
+    let(:mixed_values) { valid_values + invalid_values }
+
+    context "with validation checks turned on" do
+      it "should import valid data" do
+        assert_difference "Topic.count", +2 do
+          result = Topic.import columns, valid_values, :all_or_none => true
+        end
+      end
+
+      it "should not import invalid data" do
+        assert_no_difference "Topic.count" do
+          result = Topic.import columns, invalid_values, :all_or_none => true
+        end
+      end
+
+      it "should not import valid data when mixed with invalid data" do
+        assert_no_difference "Topic.count" do
+          result = Topic.import columns, mixed_values, :all_or_none => true
+        end
+      end
+
+      it "should report the failed instances" do
+        results = Topic.import columns, mixed_values, :all_or_none => true
+        assert_equal invalid_values.size, results.failed_instances.size
+        results.failed_instances.each { |e| assert_kind_of Topic, e }
+      end
+
+      it "should report the zero inserts" do
+        results = Topic.import columns, mixed_values, :all_or_none => true
+        assert_equal 0, results.num_inserts
+      end
+    end
+  end
+
   context "with :synchronize option" do
     context "synchronizing on new records" do
       let(:new_topics) { Build(3, :topics) }

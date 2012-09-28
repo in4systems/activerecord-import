@@ -17,6 +17,12 @@ module ActiveRecord::Import #:nodoc:
       true
     end
   end
+
+  class MissingColumnError < StandardError
+    def initialize(name, index)
+      super "Missing column for value <#{name}> at index #{index}"
+    end
+  end
 end
 
 class ActiveRecord::Base
@@ -260,9 +266,13 @@ class ActiveRecord::Base
         end    
       end
       array_of_attributes.compact!
-      
-      num_inserts = array_of_attributes.empty? ? 0 : import_without_validations_or_callbacks( column_names, array_of_attributes, options )
-      ActiveRecord::Import::Result.new(succeeded_instances, failed_instances, num_inserts)
+
+      num_inserts = if array_of_attributes.empty? || options[:all_or_none] && failed_instances.any?
+                      0
+                    else
+                      import_without_validations_or_callbacks( column_names, array_of_attributes, options )
+                    end
+      ActiveRecord::Import::Result.new(failed_instances, num_inserts)
     end
     
     # Imports the passed in +column_names+ and +array_of_attributes+
@@ -272,7 +282,13 @@ class ActiveRecord::Base
     # information on +column_names+, +array_of_attributes_ and
     # +options+.
     def import_without_validations_or_callbacks( column_names, array_of_attributes, options={} )
-      columns = column_names.map { |name| columns_hash[name.to_s] }
+      columns = column_names.each_with_index.map do |name, i|
+        column = columns_hash[name.to_s]
+
+        raise ActiveRecord::Import::MissingColumnError.new(name.to_s, i) if column.nil?
+
+        column
+      end
 
       columns_sql = "(#{column_names.map{|name| connection.quote_column_name(name) }.join(',')})"
       insert_sql = "INSERT #{options[:ignore] ? 'IGNORE ':''}INTO #{quoted_table_name} #{columns_sql} VALUES "
@@ -306,9 +322,9 @@ class ActiveRecord::Base
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
           column = columns[j]
-          # be sure to query sequence_name *last*, only if cheaper tests fail, because it's costly
-          if val.nil? && column.name == primary_key && !sequence_name.blank?
-            connection_memo.next_value_for_sequence(sequence_name)
+
+          if val.nil? && !sequence_name.blank? && column.name == primary_key
+             connection.next_value_for_sequence(sequence_name)
           else
             connection_memo.quote(val, column) # no need for column.type_cast(val) - quote already does type casting
           end

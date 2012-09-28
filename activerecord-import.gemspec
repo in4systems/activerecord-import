@@ -5,7 +5,6 @@
 
 Gem::Specification.new do |s|
   s.name = "activerecord-import"
-
   s.version = "0.2.10"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
@@ -45,34 +44,8 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/zdennis/activerecord-import"
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.24"
   s.summary = "Bulk-loading extension for ActiveRecord"
-  s.test_files = [
-    "test/active_record/connection_adapter_test.rb",
-    "test/adapters/jdbcmysql.rb",
-    "test/adapters/mysql.rb",
-    "test/adapters/mysql2.rb",
-    "test/adapters/postgresql.rb",
-    "test/adapters/sqlite3.rb",
-    "test/import_test.rb",
-    "test/jdbcmysql/import_test.rb",
-    "test/models/book.rb",
-    "test/models/group.rb",
-    "test/models/topic.rb",
-    "test/mysql/import_test.rb",
-    "test/mysql2/import_test.rb",
-    "test/postgresql/import_test.rb",
-    "test/schema/generic_schema.rb",
-    "test/schema/mysql_schema.rb",
-    "test/schema/version.rb",
-    "test/support/active_support/test_case_extensions.rb",
-    "test/support/factories.rb",
-    "test/support/generate.rb",
-    "test/support/mysql/assertions.rb",
-    "test/support/mysql/import_examples.rb",
-    "test/synchronize_test.rb",
-    "test/test_helper.rb"
-  ]
 
   if s.respond_to? :specification_version then
     s.specification_version = 3

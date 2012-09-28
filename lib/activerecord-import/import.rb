@@ -3,7 +3,7 @@ require "ostruct"
 module ActiveRecord::Import::ConnectionAdapters ; end
 
 module ActiveRecord::Import #:nodoc:
-  class Result < Struct.new(:succeeded_instances, :failed_instances, :num_inserts)
+  class Result < Struct.new(:failed_instances, :num_inserts)
   end
 
   module ImportSupport #:nodoc:
@@ -163,7 +163,6 @@ class ActiveRecord::Base
     #  
     # = Returns
     # This returns an object which responds to +failed_instances+ and +num_inserts+.
-    # * succeeded_instances - an array of objects that passed validation and were committed to the database. An empty array if no validation is performed.
     # * failed_instances - an array of objects that fails validation and were not committed to the database. An empty array if no validation is performed.
     # * num_inserts - the number of insert statements it took to import the data
     def import( *args )
@@ -192,7 +191,7 @@ class ActiveRecord::Base
         end
         # supports empty array
       elsif args.last.is_a?( Array ) and args.last.empty?
-        return ActiveRecord::Import::Result.new([], [], 0) if args.last.empty?
+        return ActiveRecord::Import::Result.new([], 0) if args.last.empty?
         # supports 2-element array and array
       elsif args.size == 2 and args.first.is_a?( Array ) and args.last.is_a?( Array )
         column_names, array_of_attributes = args
@@ -220,7 +219,7 @@ class ActiveRecord::Base
         import_with_validations( column_names, array_of_attributes, options )
       else
         num_inserts = import_without_validations_or_callbacks( column_names, array_of_attributes, options )
-        ActiveRecord::Import::Result.new([], [], num_inserts)
+        ActiveRecord::Import::Result.new([], num_inserts)
       end
 
       if options[:synchronize]
@@ -238,15 +237,12 @@ class ActiveRecord::Base
     
     # Imports the passed in +column_names+ and +array_of_attributes+
     # given the passed in +options+ Hash with validations. Returns an
-    # object with the methods +succeeded_instances+, +failed_instances+ and
-    # +num_inserts+.
-    # +succeeded_instances+ is an array of instances that passed validations. 
+    # object with the methods +failed_instances+ and +num_inserts+.
     # +failed_instances+ is an array of instances that failed validations. 
     # +num_inserts+ is the number of inserts it took to import the data. See
     # ActiveRecord::Base.import for more information on
     # +column_names+, +array_of_attributes+ and +options+.
     def import_with_validations( column_names, array_of_attributes, options={} )
-      succeeded_instances = []
       failed_instances = []
     
       # create instances for each of our column/value sets
@@ -258,9 +254,7 @@ class ActiveRecord::Base
         instance = new do |model|
           hsh.each_pair{ |k,v| model.send("#{k}=", v) }
         end
-        if instance.valid?
-          succeeded_instances << instance
-        else
+        if not instance.valid?
           array_of_attributes[ i ] = nil
           failed_instances << instance
         end    
@@ -316,9 +310,6 @@ class ActiveRecord::Base
     # Returns SQL the VALUES for an INSERT statement given the passed in +columns+
     # and +array_of_attributes+.
     def values_sql_for_columns_and_attributes(columns, array_of_attributes)   # :nodoc:
-      # connection gets called a *lot* in this high intensity loop. 
-      # Reuse the same one w/in the loop, otherwise it would keep being re-retreived (= lots of time for large imports)
-      connection_memo = connection
       array_of_attributes.map do |arr|
         my_values = arr.each_with_index.map do |val,j|
           column = columns[j]
@@ -326,7 +317,7 @@ class ActiveRecord::Base
           if val.nil? && !sequence_name.blank? && column.name == primary_key
              connection.next_value_for_sequence(sequence_name)
           else
-            connection_memo.quote(val, column) # no need for column.type_cast(val) - quote already does type casting
+            connection.quote(column.type_cast(val), column)
           end
         end
         "(#{my_values.join(',')})"

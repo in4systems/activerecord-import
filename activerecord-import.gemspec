@@ -52,7 +52,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<activerecord>, ["~> 3.0"])
-      s.add_runtime_dependency(%q<activerecord-sqlanywhere-adapter>)
+      s.add_runtime_dependency(%q<activerecord-sqlanywhere-adapter-in4systems>)
       s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 1.4.0"])
       s.add_runtime_dependency(%q<activerecord>, ["~> 3.0"])

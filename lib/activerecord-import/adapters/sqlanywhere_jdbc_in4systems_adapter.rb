@@ -1,4 +1,4 @@
-module ActiveRecord::Import::SQLAnywhereJdbcIn4systemsAdapter
+module ActiveRecord::Import::SqlanywhereJdbcIn4systemsAdapter
   include ActiveRecord::Import::ImportSupport
 
   def next_value_for_sequence(sequence_name)
